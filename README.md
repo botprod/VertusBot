@@ -1,8 +1,5 @@
 # VertusBot
-clicker for [https://t.me/Vertus_App_bot](t.me/vertus_app_bot/app?startapp=6008239182)
-
-More crypto themes and softs in telegram: [ApeCryptor](https://t.me/+_xCNXumUNWJkYjAy "ApeCryptor") 🦧
-Additional soft information: https://t.me/ApeCryptorSoft/89
+Enhanced clicker for [https://t.me/Vertus_App_bot](t.me/vertus_app_bot/)
 
 ## Functionality
 | Functional                                                     | Supported |

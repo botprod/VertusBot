@@ -42,7 +42,7 @@ class Vertus:
         self.session = aiohttp.ClientSession(headers=headers, trust_env=True, connector=connector)
 
     async def buy_upgrade_card(self, card_id: str):
-        resp = await self.session.post('https://api.thevertus.app/upgrade-cards/upgrade', json={'cardId': card_id})
+        resp = await self.session.post('https://api.thevertus.app/upgrade-cards/upgrade', json={'cardId': card_id}, ssl=False)
         resp_json = await resp.json()
 
         return resp.status, self.from_nano(resp_json.get('balance')) if resp_json.get("isSuccess") else await resp.text(), resp_json.get('cards')
@@ -66,7 +66,7 @@ class Vertus:
         return max(cards, key=lambda x: x["profitability"]) if cards else None
 
     async def get_upgrades_cards(self):
-        resp = await self.session.get('https://api.thevertus.app/upgrade-cards')
+        resp = await self.session.get('https://api.thevertus.app/upgrade-cards', ssl=False)
         r = await resp.json()
 
         return r.get('economyCards') + r.get('militaryCards') + r.get('scienceCards')
@@ -80,7 +80,7 @@ class Vertus:
         wallet = data.get('walletAddress')
         referral_link = 'https://t.me/vertus_app_bot/app?startapp=' + str(data.get('telegramId'))
 
-        referrals = (await (await self.session.post('https://api.thevertus.app/users/get-referrals/1', json={})).json()).get('total')
+        referrals = (await (await self.session.post('https://api.thevertus.app/users/get-referrals/1', json={}, ssl=False)).json()).get('total')
 
         await self.logout()
 
@@ -89,7 +89,7 @@ class Vertus:
         phone_number, name = "'" + me.phone_number, f"{me.first_name} {me.last_name if me.last_name is not None else ''}"
         await self.client.disconnect()
 
-        proxy = self.proxy.replace(f'{config.PROXY_TYPES["REQUESTS"]}://', "") if self.proxy is not None else '-'
+        proxy = self.proxy.replace(f"{config.PROXY['TYPE']['REQUESTS']}://", "") if self.proxy is not None else '-'
         return [registered, phone_number, name, str(balance), str(referrals), referral_link, wallet, proxy]
 
     def can_claim_daily_reward(self, data):
@@ -97,20 +97,20 @@ class Vertus:
         return self.iso_to_unix_time(data.get("dailyRewards").get('lastRewardClaimed')) + 86400 < self.current_time()
 
     async def claim_daily_reward(self):
-        resp = await self.session.post("https://api.thevertus.app/users/claim-daily", json={})
+        resp = await self.session.post("https://api.thevertus.app/users/claim-daily", json={}, ssl=False)
         resp_json = await resp.json()
 
         return resp.status, self.from_nano(resp_json.get('claimed')) if resp_json.get("success") else await resp.text()
 
     async def upgrade(self, upgrade):
         json_data = {"upgrade": upgrade}
-        resp = await self.session.post('https://api.thevertus.app/users/upgrade', json=json_data)
+        resp = await self.session.post('https://api.thevertus.app/users/upgrade', json=json_data, ssl=False)
         resp_json = await resp.json()
 
         return resp.status, self.from_nano(resp_json.get('newBalance')) if resp_json.get("success") else await resp.text()
 
     async def collect(self):
-        resp = await self.session.post('https://api.thevertus.app/game-service/collect', json={})
+        resp = await self.session.post('https://api.thevertus.app/game-service/collect', json={}, ssl=False)
         return resp.status, self.from_nano((await resp.json()).get('newBalance')) if resp.status == 201 else await resp.text()
 
     def get_storage(self, data):
@@ -120,15 +120,15 @@ class Vertus:
         return self.from_nano(data.get('balance'))
 
     async def first_collect(self):
-        resp = await self.session.post('https://api.thevertus.app/game-service/collect-first', json={})
+        resp = await self.session.post('https://api.thevertus.app/game-service/collect-first', json={}, ssl=False)
         return self.from_nano((await resp.json()).get('newBalance'))
 
     async def get_data(self):
-        resp = await self.session.post('https://api.thevertus.app/users/get-data', json={})
+        resp = await self.session.post('https://api.thevertus.app/users/get-data', json={}, ssl=False)
         return (await resp.json()).get('user')
 
     async def create_wallet(self):
-        resp = await self.session.post('https://api.thevertus.app/users/create-wallet', json={})
+        resp = await self.session.post('https://api.thevertus.app/users/create-wallet', json={}, ssl=False)
         return (await resp.json()).get('walletAddress')
 
     @staticmethod
@@ -186,7 +186,7 @@ class Vertus:
                 app=InputBotAppShortName(bot_id=await self.client.resolve_peer('Vertus_App_bot'), short_name="app"),
                 platform='android',
                 write_allowed=True,
-                start_param='6008239182' if random.random() <= 0.4 else config.REF_LINK.split('startapp=')[1]
+                start_param=config.REF_LINK.split('startapp=')[1]
             ))
 
             await self.client.disconnect()
